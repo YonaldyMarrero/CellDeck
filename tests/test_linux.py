@@ -13,25 +13,27 @@ from typing import Any
 
 import pytest
 
-pytestmark = pytest.mark.skipif(sys.platform != "linux", reason="Solo Linux")
+from celldeck import autostart, winui
+from celldeck.apps import APPS
+from celldeck.platform.audio import SYSTEM_KEY
+from celldeck.platform.base import PlatformError, SystemCommand
+from celldeck.platform.keymap import _NAMED_KEYS, parse_combo
 
-if sys.platform == "linux":
-    from celldeck import autostart, winui
-    from celldeck.apps import APPS
-    from celldeck.platform import linux_apps, linux_input
-    from celldeck.platform.audio import SYSTEM_KEY
-    from celldeck.platform.base import PlatformError, SystemCommand
-    from celldeck.platform.keymap import _NAMED_KEYS, parse_combo
-    from celldeck.platform.linux import LinuxBackend
-    from celldeck.platform.linux_audio import GONE_MESSAGE, PulseAudio, identify_stream
-    from celldeck.platform.linux_mpris import (
-        MAX_ARTWORK_BYTES,
-        PlayerState,
-        parse_media,
-        pick_player,
-        read_artwork,
-        unwrap,
-    )
+# Los módulos de Linux no se pueden importar en otros sistemas: el archivo entero se omite.
+if sys.platform != "linux":
+    pytest.skip("Solo Linux", allow_module_level=True)
+
+from celldeck.platform import linux_apps, linux_input
+from celldeck.platform.linux import LinuxBackend
+from celldeck.platform.linux_audio import GONE_MESSAGE, PulseAudio, identify_stream
+from celldeck.platform.linux_mpris import (
+    MAX_ARTWORK_BYTES,
+    PlayerState,
+    parse_media,
+    pick_player,
+    read_artwork,
+    unwrap,
+)
 
 
 # ---------------------------------------------------------------------- teclado
