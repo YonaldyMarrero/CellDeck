@@ -1,4 +1,4 @@
-"""Servicio "ahora suena": sesión multimedia de Windows (título, artista, portada, estado)."""
+"""Servicio "ahora suena": sesión multimedia del sistema (título, artista, portada, estado)."""
 
 from __future__ import annotations
 

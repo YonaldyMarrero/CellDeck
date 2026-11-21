@@ -2,6 +2,26 @@
 
 Registro de lo que se eligió, lo que se descartó y por qué. Lo más reciente va primero.
 
+## Soporte para Linux (2026-11-21)
+
+- **Misma interfaz, otro backend:** `LinuxBackend` cumple `PlatformBackend`. El servidor, la web,
+  la seguridad y los plugins no cambian.
+- **Librerías en Python puro o ctypes, no herramientas de consola:** `pulsectl` (audio),
+  `jeepney` (D-Bus) y `python-xlib` (XTEST). Las distribuciones no traen siempre `pactl`,
+  `playerctl` ni `xdotool` (Zorin 18 no trae ninguna) y no hay que compilar nada.
+- **Multimedia por MPRIS, no por teclas:** habla con el reproductor aunque no tenga el foco y
+  funciona igual en Wayland. Solo si no hay ningún reproductor se simula la tecla.
+- **Wayland:** no hay forma estándar y sin permisos de inyectar teclas. Se usa `ydotool` si está
+  y, si no, un error que explica cómo instalarlo o cambiar a una sesión X11. Se descartó el
+  portal RemoteDesktop porque pide permiso en pantalla en cada arranque.
+- **PyGObject del sistema:** la bandeja con menú (AppIndicator) y los iconos SVG lo necesitan, y
+  con pip hay que compilarlo. Se usa el de la distribución (`--system-site-packages`) y, si
+  falta, todo sigue funcionando salvo esas dos cosas.
+- **Lanzar procesos:** siempre con lista de argumentos, sin shell, desacoplados (nueva sesión) y
+  sin heredar pipes: la app que abre `gio`/`xdg-open` heredaría el pipe y se bloquearía.
+- **Configs portables:** los programas típicos de Windows se traducen a su equivalente del
+  escritorio, así la config de fábrica y las importadas funcionan sin tocarlas.
+
 ## Autenticación por USB: la IP no prueba que sea la PC (2026-11-21)
 
 - **Problema:** con `adb reverse` el celular llega como `127.0.0.1`. Cualquier app instalada en

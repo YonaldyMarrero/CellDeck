@@ -24,6 +24,11 @@ _CANDIDATES = (
     r"C:\platform-tools\adb.exe",
     r"%ProgramFiles%\platform-tools\adb.exe",
     r"%USERPROFILE%\platform-tools\adb.exe",
+    # Linux: Android Studio, paquetes de la distribución y descargas manuales.
+    "~/Android/Sdk/platform-tools/adb",
+    "~/platform-tools/adb",
+    "/usr/lib/android-sdk/platform-tools/adb",
+    "/opt/android-sdk/platform-tools/adb",
 )
 
 
@@ -42,7 +47,7 @@ def find_adb(configured: str | None = None) -> str | None:
     if found:
         return found
     for cand in _CANDIDATES:
-        path = Path(os.path.expandvars(cand))
+        path = Path(os.path.expanduser(os.path.expandvars(cand)))
         if path.is_file():
             return str(path)
     return None

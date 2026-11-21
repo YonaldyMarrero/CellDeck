@@ -12,6 +12,10 @@ plataforma la busca en ese orden:
 6. Carpetas habituales (con variables de entorno) y el ``PATH``.
 
 Si no se encuentra el ejecutable pero el protocolo está registrado, se abre por URI.
+
+En Linux se buscan sus archivos ``.desktop`` (paquete del sistema, Flatpak o Snap) por los
+identificadores de ``desktop_ids`` y, si no hay ninguno, el ejecutable en el ``PATH``
+(``linux_exe_names``). Ver ``celldeck.platform.linux_apps``.
 """
 
 from __future__ import annotations
@@ -40,6 +44,9 @@ class AppSpec:
     uninstall_names: tuple[str, ...] = ()  # prefijos de DisplayName
     candidates: tuple[str, ...] = ()  # rutas habituales con %VARIABLES%
     vswhere: bool = False
+    # Linux: identificadores de archivo .desktop (sin la extensión) y ejecutables del PATH.
+    desktop_ids: tuple[str, ...] = ()
+    linux_exe_names: tuple[str, ...] = ()
 
     @property
     def scheme(self) -> str | None:
@@ -63,6 +70,8 @@ APPS: dict[str, AppSpec] = {
             ),
             uninstall_names=("Steam",),
             candidates=(r"%ProgramFiles(x86)%\Steam\steam.exe", r"%ProgramFiles%\Steam\steam.exe"),
+            desktop_ids=("steam", "com.valvesoftware.Steam", "steam_steam"),
+            linux_exe_names=("steam",),
         ),
         AppSpec(
             id="epic",
@@ -76,6 +85,9 @@ APPS: dict[str, AppSpec] = {
                 rf"%ProgramFiles%\{_EPIC_BIN}\Win64\EpicGamesLauncher.exe",
                 rf"%ProgramFiles(x86)%\{_EPIC_BIN}\Win32\EpicGamesLauncher.exe",
             ),
+            # En Linux no existe: el lanzador más usado para la tienda de Epic es Heroic.
+            desktop_ids=("com.heroicgameslauncher.hgl", "heroic", "heroic_heroic"),
+            linux_exe_names=("heroic",),
         ),
         AppSpec(
             id="visualstudio",
@@ -100,6 +112,8 @@ APPS: dict[str, AppSpec] = {
                 r"%LOCALAPPDATA%\Programs\Microsoft VS Code\Code.exe",
                 r"%ProgramFiles%\Microsoft VS Code\Code.exe",
             ),
+            desktop_ids=("code", "com.visualstudio.code", "code_code", "code-oss", "codium"),
+            linux_exe_names=("code", "codium"),
         ),
         AppSpec(
             id="brave",
@@ -112,6 +126,8 @@ APPS: dict[str, AppSpec] = {
                 r"%ProgramFiles(x86)%\BraveSoftware\Brave-Browser\Application\brave.exe",
                 r"%LOCALAPPDATA%\BraveSoftware\Brave-Browser\Application\brave.exe",
             ),
+            desktop_ids=("brave-browser", "com.brave.Browser", "brave_brave", "brave"),
+            linux_exe_names=("brave-browser", "brave"),
         ),
     )
 }

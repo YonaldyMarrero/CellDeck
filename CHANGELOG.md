@@ -6,6 +6,19 @@ Todos los cambios visibles de CellDeck se anotan aquí. El formato sigue
 
 ## [Sin publicar]
 
+### Añadido
+
+- **Soporte para Linux** (X11 y Wayland; GNOME, KDE, XFCE, Cinnamon…). Ver `docs/linux.md`:
+  - Volumen y Volume Mixer con PulseAudio o PipeWire.
+  - "Ahora suena", portada y controles multimedia con MPRIS (Spotify, navegadores, VLC…).
+  - Atajos de teclado y texto con XTEST en X11, o `ydotool` en Wayland.
+  - Apps instaladas por sus archivos `.desktop` (paquetes, Flatpak y Snap), con su logotipo.
+  - Bloquear, suspender, hibernar, apagar, reiniciar y cerrar sesión.
+  - Icono en la bandeja (AppIndicator), diálogos con zenity/kdialog e inicio automático XDG.
+- Una configuración hecha en Windows funciona en Linux: `explorer.exe`, `notepad.exe`,
+  `calc.exe`, `cmd.exe`, `taskmgr.exe` y `ms-settings:` abren la app equivalente.
+- Integración continua también en Ubuntu.
+
 ### Seguridad
 
 - **El celular conectado por USB ya no recibe permisos de administración sin PIN.** Con

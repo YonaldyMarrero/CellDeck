@@ -9,6 +9,7 @@ agrupan por ejecutable, igual que el mezclador de Windows, y un cambio se aplica
 from __future__ import annotations
 
 import logging
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import PurePath
@@ -19,6 +20,8 @@ import psutil
 from celldeck.platform import windows_apps
 from celldeck.platform.audio import SYSTEM_KEY, SessionRow, app_key, group_sessions
 from celldeck.platform.base import AudioApp, PlatformError
+
+assert sys.platform == "win32"  # noqa: S101 - mypy omite el resto del archivo en otros sistemas
 
 log = logging.getLogger(__name__)
 

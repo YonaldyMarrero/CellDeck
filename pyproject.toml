@@ -34,6 +34,10 @@ dependencies = [
     "winrt-Windows.Foundation>=3; sys_platform == 'win32'",
     "winrt-Windows.Media.Control>=3; sys_platform == 'win32'",
     "winrt-Windows.Storage.Streams>=3; sys_platform == 'win32'",
+    # --- Solo Linux: capa nativa (Python puro o ctypes; no hay que compilar nada) ---
+    "pulsectl>=24; sys_platform == 'linux'",  # volumen y mezclador (PulseAudio / PipeWire)
+    "jeepney>=0.8; sys_platform == 'linux'",  # MPRIS por D-Bus (ahora suena)
+    "python-xlib>=0.33; sys_platform == 'linux'",  # teclado simulado (XTEST)
 ]
 
 [project.optional-dependencies]
@@ -84,7 +88,10 @@ packages = ["celldeck"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["pycaw.*", "comtypes.*", "pystray.*", "qrcode.*", "winrt.*", "psutil.*"]
+module = [
+    "pycaw.*", "comtypes.*", "pystray.*", "qrcode.*", "winrt.*", "psutil.*",
+    "pulsectl.*", "jeepney.*", "Xlib.*", "gi.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
