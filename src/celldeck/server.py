@@ -18,11 +18,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from celldeck.api import ROUTERS
+from celldeck.api.deps import principal_for
 from celldeck.api.routes_config import config_payload
 from celldeck.assets import IMMUTABLE, compute_asset_version, render_html
 from celldeck.config.models import Config
 from celldeck.live import handle_client_message
-from celldeck.security import HostCheckMiddleware, is_loopback
+from celldeck.security import HostCheckMiddleware
 from celldeck.state import AppState
 
 log = logging.getLogger(__name__)
@@ -127,12 +128,13 @@ def create_app(
     @app.websocket("/ws")
     async def websocket_endpoint(ws: WebSocket) -> None:
         # Los navegadores no permiten cabeceras en WebSocket: el token va en la query.
-        payload = state.tokens.verify(ws.query_params.get("token"))
-        if payload is None:
+        principal = principal_for(
+            state, ws.query_params.get("token"), ws.client.host if ws.client else None
+        )
+        if principal is None:
             await ws.close(code=4401)
             return
         await ws.accept()
-        loopback = is_loopback(ws.client.host if ws.client else None)
         await ws.send_text(
             json.dumps(
                 {
@@ -140,7 +142,7 @@ def create_app(
                     "data": {
                         "version": state.version,
                         "mode": state.mode,
-                        "can_edit": loopback or state.settings.allow_remote_edit,
+                        "can_edit": principal.can_edit,
                     },
                 }
             )

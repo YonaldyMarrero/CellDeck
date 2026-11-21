@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from celldeck.api.deps import StateDep, client_ip
+from celldeck.api.deps import Principal, StateDep, client_ip, principal_for
 from celldeck.security import TOKEN_HEADER, PairingLocked, is_loopback
 from celldeck.state import AppState
 
@@ -16,37 +16,51 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["auth"])
 
 
-def _session_info(state: AppState, loopback: bool) -> dict[str, Any]:
+def _session_info(state: AppState, principal: Principal | None, ip: str) -> dict[str, Any]:
+    admin = bool(principal and principal.admin)
     return {
         "version": state.version,
         "mode": state.mode,
-        "loopback": loopback,
-        "can_edit": loopback or state.settings.allow_remote_edit,
+        # Conexión local (PC o celular por USB): solo para mensajes de la UI, no da permisos.
+        "loopback": is_loopback(ip),
+        "admin": admin,
+        "can_edit": admin or state.settings.allow_remote_edit,
         "backend": state.backend.name,
     }
 
 
 @router.get("/session")
 def session(request: Request, state: StateDep) -> dict[str, Any]:
-    """Desde loopback (PC o USB con adb reverse) entrega un token directamente.
+    """Confirma el token del cliente; si no hay o caducó, 401 y la UI pide el PIN.
 
-    Desde la red solo confirma un token existente; si no hay, responde 401 y la UI
-    muestra la pantalla de PIN.
+    Ya no se entrega un token sin PIN a los clientes locales: con ``adb reverse`` el
+    celular (y cualquier app instalada en él) llega como 127.0.0.1. La propia PC entra
+    con un enlace de un solo uso de la bandeja (``POST /api/session/admin``).
     """
-    loopback = is_loopback(client_ip(request))
-    if loopback:
-        # Reutilizar el token si sigue siendo válido: así las URLs con token (portada)
-        # no cambian en cada recarga y el navegador puede servirlas desde su caché.
-        current = request.headers.get(TOKEN_HEADER)
-        token = (
-            current
-            if current and state.tokens.verify(current) is not None
-            else state.tokens.issue("local", state.settings.token_ttl_days)
-        )
-        return {"token": token, **_session_info(state, True)}
-    if state.tokens.verify(request.headers.get(TOKEN_HEADER)) is None:
+    ip = client_ip(request)
+    principal = principal_for(state, request.headers.get(TOKEN_HEADER), ip)
+    if principal is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Emparejamiento requerido")
-    return _session_info(state, False)
+    return _session_info(state, principal, ip)
+
+
+class AdminRequest(BaseModel):
+    code: str = Field(min_length=1, max_length=64)
+
+
+@router.post("/session/admin")
+def admin_session(body: AdminRequest, request: Request, state: StateDep) -> dict[str, Any]:
+    """Canjea un enlace de la bandeja (``#admin=código``) por un token de administración."""
+    ip = client_ip(request)
+    if not is_loopback(ip) or not state.admin_links.consume(body.code):
+        log.warning("Enlace de administración inválido o caducado desde %s", ip)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Enlace caducado. Abre el panel otra vez desde el icono de la bandeja.",
+        )
+    token = state.tokens.issue("pc", state.settings.token_ttl_days, admin=True)
+    principal = principal_for(state, token, ip)
+    return {"token": token, **_session_info(state, principal, ip)}
 
 
 class PairRequest(BaseModel):
@@ -71,4 +85,4 @@ def pair(body: PairRequest, request: Request, state: StateDep) -> dict[str, Any]
         raise HTTPException(status.HTTP_403_FORBIDDEN, "PIN incorrecto")
     log.info("Dispositivo emparejado desde %s (%s)", ip, body.device)
     token = state.tokens.issue(body.device, state.settings.token_ttl_days)
-    return {"token": token, **_session_info(state, is_loopback(ip))}
+    return {"token": token, **_session_info(state, principal_for(state, token, ip), ip)}

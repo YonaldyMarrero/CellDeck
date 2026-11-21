@@ -21,7 +21,7 @@ from celldeck.plugins import PluginRegistry, build_default_registry
 from celldeck.plugins.loader import load_external_plugins
 from celldeck.plugins.runner import ActionRunner
 from celldeck.pomodoro import PomodoroTimer
-from celldeck.security import PinGuard, TokenManager
+from celldeck.security import AdminLinks, PinGuard, TokenManager
 from celldeck.spotify import SpotifyBridge
 from celldeck.ws import WebSocketHub
 
@@ -67,6 +67,8 @@ class AppState:
     version: str = __version__
     started_at: float = field(default_factory=time.time)
     live: LiveState = field(default_factory=LiveState)
+    # Enlaces de un solo uso con los que la propia PC obtiene permiso de administración.
+    admin_links: AdminLinks = field(default_factory=AdminLinks)
     # Bucle de eventos del servidor (se fija al arrancar). La bandeja vive en otro hilo y
     # lo usa para ejecutar corrutinas de forma segura.
     loop: asyncio.AbstractEventLoop | None = None

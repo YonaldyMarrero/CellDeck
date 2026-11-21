@@ -354,7 +354,7 @@
     const body = el.appendChild(u.el('div', 'sp-body'));
     const content = body.appendChild(u.el('div'));
     const info = global.PD.app && global.PD.app.state.info;
-    const local = !!(info && info.loopback);
+    const local = !!(info && info.admin);   // la cuenta solo se configura en la PC
     const account = local ? body.appendChild(createAccount()) : null;
 
     const player = el.appendChild(u.el('div', 'sp-player hidden'));

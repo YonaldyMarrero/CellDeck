@@ -404,15 +404,31 @@
     if (state.connection) state.connection.stop();
     u.store.remove('token');
     api.setToken(null);
-    if (state.info && state.info.loopback) {
-      start();   // en local basta con pedir otro token
-    } else {
-      showPairing();
+    showPairing();
+  }
+
+  /**
+   * Enlace de la bandeja de la PC (#admin=código de un solo uso): la propia PC entra sin PIN
+   * y con permiso de edición. Si caducó, se pide el PIN como a cualquier celular.
+   */
+  async function adminFromHash() {
+    const m = /[#&]admin=([A-Za-z0-9_-]{1,64})/.exec(global.location.hash);
+    if (!m) return false;
+    if (global.history && global.history.replaceState) {
+      global.history.replaceState(null, '', global.location.pathname + global.location.search);
     }
+    try {
+      const res = await api.adminSession(m[1]);
+      u.store.set('token', res.token);
+    } catch (e) {
+      u.toast('El enlace caducó: abre el panel otra vez desde la bandeja de la PC', 'error');
+    }
+    return true;
   }
 
   /** Emparejamiento automático con el PIN incluido en el QR (#pin=123456). */
   async function pairFromHash() {
+    if (await adminFromHash()) return;
     const m = /[#&]pin=(\d{6})/.exec(global.location.hash);
     if (!m) return;
     if (global.history && global.history.replaceState) {
@@ -591,7 +607,7 @@
     $('opt-theme').value = u.store.get('theme', '');
     $('opt-size').value = String(u.store.get('btnsize', ''));
     updateColsInfo();
-    u.show($('btn-forget'), !info.loopback);
+    u.show($('btn-forget'), !info.admin);
     updateNoSleepHint();
     u.show($('sheet-backdrop'), true);
     u.show($('sheet'), true);
@@ -686,9 +702,6 @@
     if (saved) api.setToken(saved);
     try {
       const info = await api.session();
-      if (info.token) {
-        api.setToken(info.token);   // local: token nuevo en cada carga
-      }
       state.info = info;
       return 'ok';
     } catch (err) {

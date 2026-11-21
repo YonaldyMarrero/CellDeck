@@ -68,12 +68,12 @@ def test_subscribe_sends_snapshot_of_new_topics(client: TestClient, state: AppSt
 
 
 # -------------------------------------------------------------- caché / sesión
-def test_local_session_reuses_valid_token(client: TestClient) -> None:
+def test_session_keeps_the_same_token(client: TestClient) -> None:
+    """La sesión no rota el token: las URLs con token (portada) siguen cacheables."""
     first = local_token(client)
-    again = client.get("/api/session", headers=auth(first)).json()["token"]
-    assert again == first
-    fresh = client.get("/api/session", headers=auth("token.falso")).json()["token"]
-    assert fresh != "token.falso"
+    assert client.get("/api/session", headers=auth(first)).status_code == 200
+    assert "token" not in client.get("/api/session", headers=auth(first)).json()
+    assert client.get("/api/session", headers=auth("token.falso")).status_code == 401
 
 
 @pytest.fixture

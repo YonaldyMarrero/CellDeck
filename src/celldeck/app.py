@@ -20,6 +20,7 @@ from celldeck.state import AppState, build_state
 log = logging.getLogger(__name__)
 
 START_TIMEOUT_S = 15.0
+ADMIN_LINK_NO_TRAY_TTL_S = 600
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,8 +81,15 @@ def serve(options: LaunchOptions) -> None:
     """Arranca el servidor en el hilo actual (bloqueante). Modo ``--no-tray``."""
     state, server, host, port = _build_server(options)
     log.info("Escuchando en http://%s:%d", host, port)
-    if state.mode == "wifi":
-        log.info("Modo WiFi activo. PIN de emparejamiento: %s", state.settings.pin)
+    # Sin bandeja no hay quien abra el panel con un enlace: se deja uno en el log.
+    code = state.admin_links.issue(ttl_seconds=ADMIN_LINK_NO_TRAY_TTL_S)
+    log.info(
+        "Panel de esta PC (enlace de un solo uso, caduca en %d min): http://127.0.0.1:%d/#admin=%s",
+        ADMIN_LINK_NO_TRAY_TTL_S // 60,
+        port,
+        code,
+    )
+    log.info("PIN de emparejamiento para los celulares: %s", state.settings.pin)
     server.run()
 
 
@@ -107,8 +115,16 @@ class ServerController:
         if self.state is not None:
             self.state.notifier = notifier
 
-    def panel_url(self) -> str:
-        return f"http://127.0.0.1:{self.port}/"
+    def panel_url(self, page: str = "") -> str:
+        """URL del panel con un enlace de administración de un solo uso.
+
+        Así la propia PC entra sin PIN y con permiso de edición, mientras que el celular
+        (aunque llegue como 127.0.0.1 por ``adb reverse``) tiene que emparejarse.
+        """
+        base = f"http://127.0.0.1:{self.port}/{page}"
+        if self.state is None:
+            return base
+        return f"{base}#admin={self.state.admin_links.issue()}"
 
     def start(self) -> None:
         """Arranca y espera a que el servidor esté escuchando.

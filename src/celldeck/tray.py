@@ -2,7 +2,7 @@
 
 Menú:
     Abrir panel · Mostrar QR / PIN · Conectar celular por USB
-    Modo WiFi · Permitir edición por WiFi · Nuevo PIN · Desconectar todos los dispositivos
+    Modo WiFi · Permitir edición desde el celular · Nuevo PIN · Desconectar todos los dispositivos
     Iniciar con Windows · Carpeta de configuración · Ver registro · Salir
 """
 
@@ -112,7 +112,7 @@ class TrayApp:
         webbrowser.open(self.controller.panel_url())
 
     def show_pairing(self, *_: Any) -> None:
-        webbrowser.open(self.controller.panel_url() + "pair.html")
+        webbrowser.open(self.controller.panel_url("pair.html"))
 
     def connect_usb(self, *_: Any) -> None:
         def task() -> None:
@@ -129,8 +129,8 @@ class TrayApp:
         new_mode = "usb" if st.mode == "wifi" else "wifi"
         if new_mode == "wifi" and not winui.ask(
             "Se activará el modo WiFi: CellDeck escuchará en tu red local y los celulares "
-            "necesitarán el PIN para conectarse.\n\nWindows puede pedirte permiso en el "
-            "firewall: permite solo 'Redes privadas'.\n\n¿Continuar?",
+            "necesitarán el PIN para conectarse.\n\nEl sistema puede pedirte permiso en el "
+            "firewall: permite solo las redes privadas.\n\n¿Continuar?",
             "Activar modo WiFi",
         ):
             return
@@ -143,7 +143,8 @@ class TrayApp:
                 self.notify(f"Modo WiFi activo. PIN: {pin}")
                 self.show_pairing()
             else:
-                self.notify("Modo USB activo: solo conexiones por cable / esta PC")
+                pin = self.controller.state.settings.pin if self.controller.state else "?"
+                self.notify(f"Modo USB activo (solo cable / esta PC). PIN: {pin}")
 
         self._in_background(task)
 
@@ -153,15 +154,15 @@ class TrayApp:
             return
         enable = not st.settings.allow_remote_edit
         if enable and not winui.ask(
-            "Los celulares emparejados por WiFi podrán modificar botones, incluidos botones "
-            "que abran programas en esta PC.\n\nActívalo solo en una red de confianza y "
-            "desactívalo al terminar de editar.\n\n¿Permitir la edición por WiFi?",
+            "Los celulares emparejados (por WiFi o por USB) podrán modificar botones, "
+            "incluidos botones que abran programas en esta PC.\n\nActívalo solo mientras "
+            "editas y desactívalo al terminar.\n\n¿Permitir la edición desde el celular?",
             "Permitir edición remota",
             warning=True,
         ):
             return
         st.settings_store.update(allow_remote_edit=enable)
-        self.notify("Edición por WiFi " + ("permitida" if enable else "desactivada"))
+        self.notify("Edición desde el celular " + ("permitida" if enable else "desactivada"))
         self.refresh()
 
     def new_pin(self, *_: Any) -> None:
@@ -176,8 +177,7 @@ class TrayApp:
         if st is None:
             return
         if not winui.ask(
-            "Todos los celulares emparejados por WiFi tendrán que volver a introducir el PIN. "
-            "¿Continuar?",
+            "Todos los celulares emparejados tendrán que volver a introducir el PIN. ¿Continuar?",
             "Desconectar dispositivos",
             warning=True,
         ):
@@ -229,7 +229,7 @@ class TrayApp:
                 "Modo WiFi", self.toggle_wifi, checked=lambda _i: bool(st() and st().mode == "wifi")
             ),
             item(
-                "Permitir edición por WiFi",
+                "Permitir edición desde el celular",
                 self.toggle_remote_edit,
                 checked=lambda _i: bool(st() and st().settings.allow_remote_edit),
             ),
@@ -267,8 +267,10 @@ class TrayApp:
 def run_with_tray(controller: ServerController, data_dir: Path, log_file: Path) -> int:
     """Arranca servidor + bandeja. Devuelve el código de salida."""
     if not winui.acquire_single_instance():
-        winui.info("CellDeck ya está abierto (mira el icono junto al reloj).\nSe abrirá el panel.")
-        webbrowser.open(f"http://127.0.0.1:{controller.options.port or 8765}/")
+        # Esta instancia no puede emitir enlaces de la otra: se indica usar su bandeja.
+        winui.info(
+            'CellDeck ya está abierto.\nUsa "Abrir panel" en su icono de la bandeja del sistema.'
+        )
         return 0
     try:
         controller.start()

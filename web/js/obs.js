@@ -71,7 +71,7 @@
     const text = status.appendChild(u.el('span', '', 'Conectando con OBS…'));
     const list = el.appendChild(u.el('div', 'obs-scenes'));
     const info = global.PD.app && global.PD.app.state.info;
-    if (info && info.loopback) el.appendChild(createSettings());
+    if (info && info.admin) el.appendChild(createSettings());   // solo la propia PC
 
     let listKey = null;
     let buttons = {};
