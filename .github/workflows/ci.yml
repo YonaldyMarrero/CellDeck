@@ -73,6 +73,15 @@ jobs:
       - name: pytest
         run: python -m pytest
 
+      - name: pip-audit (dependencias del paquete .deb)
+        run: pip-audit -r requirements/linux.txt --disable-pip --no-deps --progress-spinner off
+
+      - name: Construir el paquete .deb (prueba de humo)
+        run: |
+          bash scripts/build_deb.sh
+          dpkg-deb --info dist/celldeck_*_amd64.deb
+          dpkg-deb -c dist/celldeck_*_amd64.deb | grep -q './usr/bin/celldeck'
+
   web:
     name: Frontend (compatibilidad con Chrome 60)
     runs-on: ubuntu-latest

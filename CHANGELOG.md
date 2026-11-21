@@ -18,6 +18,8 @@ Todos los cambios visibles de CellDeck se anotan aquí. El formato sigue
 - Una configuración hecha en Windows funciona en Linux: `explorer.exe`, `notepad.exe`,
   `calc.exe`, `cmd.exe`, `taskmgr.exe` y `ms-settings:` abren la app equivalente.
 - Integración continua también en Ubuntu.
+- **Paquete `.deb`** para Ubuntu, Debian, Zorin, Mint y Pop!_OS (`scripts/build_deb.sh`). Se
+  publica en cada Release con su huella en `SHA256SUMS.txt` y su atestación de compilación.
 
 ### Seguridad
 

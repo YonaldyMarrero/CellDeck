@@ -2,6 +2,21 @@
 
 Registro de lo que se eligió, lo que se descartó y por qué. Lo más reciente va primero.
 
+## Paquete de Linux: .deb con venv sin conexión (2026-11-21)
+
+- **Elegido: `.deb`** (Ubuntu, Debian, Zorin, Mint, Pop!_OS: la familia más usada en escritorio).
+  `apt` resuelve PyGObject, AppIndicator y libpulse como dependencias del sistema.
+- **Venv creado en `postinst` a partir de wheels incluidos**, para 3.11, 3.12 y 3.13: no hace
+  falta Internet al instalar y funciona con el Python de cada versión de la distribución. Las
+  versiones van fijadas en `requirements/linux.txt`, y `--ignore-installed` evita que el
+  venv use otras versiones del sistema. Solo PyGObject viene del sistema
+  (`--system-site-packages`).
+- **Descartado: AppImage o PyInstaller de un solo archivo.** Habría que meter dentro PyGObject,
+  GTK y AppIndicator, que dependen de la versión del escritorio y de la distribución. El
+  resultado sería frágil y pesado.
+- **Pendiente:** fijar también los hashes de los wheels de Linux (como `build.lock` en Windows) y
+  un paquete RPM para Fedora. Mientras tanto, en Fedora se instala desde el código.
+
 ## Soporte para Linux (2026-11-21)
 
 - **Misma interfaz, otro backend:** `LinuxBackend` cumple `PlatformBackend`. El servidor, la web,

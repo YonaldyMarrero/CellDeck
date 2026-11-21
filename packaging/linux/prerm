@@ -1,0 +1,10 @@
+#!/bin/sh
+# El venv lo creó postinst (no figura en la lista de archivos del paquete): se borra aquí.
+# La configuración del usuario (~/.config/celldeck) no se toca.
+set -e
+case "$1" in
+    remove|upgrade|deconfigure)
+        rm -rf /opt/celldeck/venv
+        ;;
+esac
+exit 0
