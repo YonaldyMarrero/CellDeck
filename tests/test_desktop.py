@@ -200,7 +200,11 @@ def test_tray_remote_edit_declined(
 
 
 def test_tray_menu_builds(tray: Any) -> None:
-    pytest.importorskip("pystray")
+    # En Linux, importar pystray abre la pantalla (X11/AppIndicator): sin escritorio (CI), se omite.
+    try:
+        import pystray  # noqa: F401
+    except Exception as exc:
+        pytest.skip(f"pystray no disponible aquí: {exc}")
     menu = tray.build_menu()
     labels = [str(i.text) for i in menu.items if i.text]
     assert "Conectar celular por USB" in labels and "Salir" in labels

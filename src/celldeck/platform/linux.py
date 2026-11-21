@@ -37,11 +37,11 @@ from celldeck.platform.keymap import KeyCombo
 if sys.platform != "linux":  # pragma: no cover - solo se importa en Linux
     raise ImportError("celldeck.platform.linux solo funciona en Linux")
 
-from celldeck.platform import linux_apps, linux_input
-from celldeck.platform.linux_audio import PulseAudio
-from celldeck.platform.linux_mpris import NO_PLAYER_MESSAGE, Mpris
-
 assert sys.platform == "linux"  # noqa: S101 - mypy omite el resto del archivo en otros sistemas
+
+from celldeck.platform import linux_apps, linux_input  # noqa: E402
+from celldeck.platform.linux_audio import PulseAudio  # noqa: E402
+from celldeck.platform.linux_mpris import NO_PLAYER_MESSAGE, Mpris  # noqa: E402
 
 log = logging.getLogger(__name__)
 T = TypeVar("T")
