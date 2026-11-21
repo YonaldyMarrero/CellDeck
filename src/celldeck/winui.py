@@ -107,6 +107,8 @@ def acquire_single_instance(name: str = "Local\\CellDeck") -> bool:
 def _linux_single_instance() -> bool:
     """Bloqueo exclusivo sobre un archivo: lo libera el sistema si el proceso muere."""
     global _mutex
+    if sys.platform == "win32":  # nunca ocurre; así mypy en Windows no analiza fcntl
+        return True
     import fcntl
 
     runtime = os.environ.get("XDG_RUNTIME_DIR")
