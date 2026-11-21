@@ -23,18 +23,20 @@ LEGACY_VALUE_NAME = "PhoneDeck"  # nombre anterior del proyecto
 
 
 DESKTOP_NAME = "celldeck.desktop"
+LAUNCHER_ENV = "CELLDECK_LAUNCHER"
 
 
 def is_supported() -> bool:
     """Solo empaquetado: en desarrollo no hay un ejecutable estable que registrar."""
     if sys.platform == "linux":
-        return is_frozen() or bool(os.environ.get("APPIMAGE"))
+        return is_frozen() or bool(os.environ.get("APPIMAGE") or os.environ.get(LAUNCHER_ENV))
     return sys.platform == "win32" and is_frozen()
 
 
 def executable() -> str:
-    # Dentro de un AppImage, sys.executable vive en un montaje temporal: vale $APPIMAGE.
-    return os.environ.get("APPIMAGE") or sys.executable
+    # Dentro de un AppImage, sys.executable vive en un montaje temporal: vale $APPIMAGE. El
+    # paquete .deb arranca con /usr/bin/celldeck, que lo indica en $CELLDECK_LAUNCHER.
+    return os.environ.get("APPIMAGE") or os.environ.get(LAUNCHER_ENV) or sys.executable
 
 
 def command() -> str:

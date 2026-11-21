@@ -62,8 +62,9 @@ WiFi. Funciona desde Android antiguos (Chrome 60) hasta celulares nuevos, tablet
 
 **Requisitos:** Windows 10 u 11 de 64 bits. No hace falta Python ni nada más.
 
-> 🐧 **¿Usas Linux?** Ubuntu, Zorin, Debian, Mint, Fedora, KDE… Mira **[docs/linux.md](docs/linux.md)**:
-> funciona igual, con PipeWire/PulseAudio, MPRIS y X11 o Wayland.
+> 🐧 **¿Usas Linux?** Descarga `celldeck_<versión>_amd64.deb` e instálalo con
+> `sudo apt install ./celldeck_*_amd64.deb` (Ubuntu, Zorin, Debian, Mint, Pop!_OS). Para otras
+> distribuciones y los detalles (Wayland, PipeWire, KDE…), mira **[docs/linux.md](docs/linux.md)**.
 
 1. Entra a **[Releases](../../releases/latest)** y descarga una de estas dos opciones:
    - **`CellDeck.exe`**: un solo archivo. Lo pones donde quieras y lo abres.

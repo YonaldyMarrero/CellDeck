@@ -52,7 +52,14 @@ def migrate_legacy_data_dir() -> Path | None:
 
 
 def resource_dir() -> Path:
-    """Raíz de los recursos: el directorio temporal del .exe o la raíz del repositorio."""
+    """Raíz de los recursos (``web/``, ``assets/``).
+
+    El directorio temporal del .exe, ``$CELLDECK_RESOURCES`` (el paquete .deb de Linux los
+    instala en ``/opt/celldeck``) o, en desarrollo, la raíz del repositorio.
+    """
+    override = os.environ.get("CELLDECK_RESOURCES")
+    if override:
+        return Path(override)
     if is_frozen():
         return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
     return Path(__file__).resolve().parents[2]

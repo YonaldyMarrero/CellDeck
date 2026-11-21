@@ -5,16 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "celldeck"
 dynamic = ["version"]  # se lee de src/celldeck/__init__.py (única fuente)
-description = "Dashboard personalizable para controlar una PC Windows desde un celular Android antiguo."
+description = "Dashboard personalizable para controlar una PC con Windows o Linux desde un celular."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [{ name = "CellDeck contributors" }]
-keywords = ["streamdeck", "dashboard", "android", "windows", "remote-control"]
+keywords = ["streamdeck", "dashboard", "android", "windows", "linux", "remote-control"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Framework :: FastAPI",
     "Topic :: Desktop Environment",
 ]

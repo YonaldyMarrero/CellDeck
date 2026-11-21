@@ -1,0 +1,15 @@
+# Dependencias de ejecución del paquete .deb de Linux (se instalan en /opt/celldeck/venv).
+# Mantener sincronizado con [project.dependencies] de pyproject.toml.
+# Tras cambiar este archivo:  bash scripts/build_deb.sh --lock   (regenera linux.txt)
+# PyGObject (bandeja e iconos SVG) no va aquí: se usa el del sistema (python3-gi).
+fastapi
+uvicorn
+websockets
+pydantic
+psutil
+pystray
+pillow
+qrcode
+pulsectl
+jeepney
+python-xlib

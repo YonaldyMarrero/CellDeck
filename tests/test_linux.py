@@ -530,3 +530,18 @@ def test_zenity_question(monkeypatch: pytest.MonkeyPatch) -> None:
     assert winui.ask("¿Activar?", "CellDeck") is True
     assert seen[0][:2] == ["/usr/bin/zenity", "--question"] and "--text=¿Activar?" in seen[0]
     assert os.environ["DISPLAY"] == ":0"
+
+
+def test_deb_launcher_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """El paquete .deb arranca con /usr/bin/celldeck y deja los recursos en /opt/celldeck."""
+    from celldeck import paths
+
+    monkeypatch.delenv("APPIMAGE", raising=False)
+    monkeypatch.setenv("CELLDECK_RESOURCES", "/opt/celldeck")
+    monkeypatch.setenv("CELLDECK_LAUNCHER", "/usr/bin/celldeck")
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    assert paths.resource_dir() == Path("/opt/celldeck")
+    assert paths.web_dir() == Path("/opt/celldeck/web")
+    assert autostart.is_supported()
+    autostart.set_enabled(True)
+    assert "Exec=/usr/bin/celldeck\n" in (tmp_path / "autostart" / "celldeck.desktop").read_text()

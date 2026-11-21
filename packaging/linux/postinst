@@ -1,0 +1,23 @@
+#!/bin/sh
+# Crea el entorno de CellDeck sin conexión, con los wheels incluidos en el paquete.
+# --system-site-packages: usa PyGObject del sistema (bandeja e iconos SVG).
+# --ignore-installed: las versiones fijadas van dentro del venv aunque el sistema tenga otras.
+set -e
+case "$1" in
+    configure)
+        rm -rf /opt/celldeck/venv
+        python3 -m venv --system-site-packages /opt/celldeck/venv
+        /opt/celldeck/venv/bin/python -m pip install --quiet --disable-pip-version-check --no-warn-conflicts \
+            --no-index --find-links /opt/celldeck/wheels --ignore-installed \
+            -r /opt/celldeck/requirements.txt
+        /opt/celldeck/venv/bin/python -m pip install --quiet --disable-pip-version-check --no-warn-conflicts \
+            --no-index --find-links /opt/celldeck/wheels --no-deps celldeck
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
+        if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+            gtk-update-icon-cache -q -t /usr/share/icons/hicolor || true
+        fi
+        ;;
+esac
+exit 0

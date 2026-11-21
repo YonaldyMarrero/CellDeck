@@ -33,7 +33,10 @@ Mientras la versión empiece por `0.`, las Releases salen marcadas como *versió
    4. Genera `CellDeck.exe`, `CellDeck-win64.zip` y `SHA256SUMS.txt`.
    5. Firma una atestación de compilación.
    6. Crea un **borrador** de Release.
-5. Descarga los archivos del borrador, pruébalos en una PC con Windows y pulsa
+   7. En Ubuntu, construye `celldeck_X.Y.Z_amd64.deb` (`scripts/build_deb.sh`), lo atesta, lo
+      sube al borrador y añade su huella a `SHA256SUMS.txt`.
+5. Descarga los archivos del borrador, pruébalos en una PC con Windows y en una con Linux
+   (`sudo apt install ./celldeck_*_amd64.deb`) y pulsa
    **Publish release**. Hasta entonces nadie más ve el borrador.
 
 Si algo falla después de crear la etiqueta, bórrala, corrige el problema y vuelve a crearla:

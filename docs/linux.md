@@ -22,6 +22,24 @@ moderno: Ubuntu, Debian, Fedora, Mint, Pop!_OS, KDE Plasma, XFCE, Cinnamon…
 
 La configuración se guarda en `~/.config/celldeck/` (o `$XDG_CONFIG_HOME/celldeck`).
 
+## Instalar el paquete `.deb` (recomendado)
+
+Para Ubuntu 22.04+, Debian 12+, Zorin OS 17+, Linux Mint 21+ y Pop!_OS (x86_64). Descarga
+`celldeck_<versión>_amd64.deb` de **[Releases](../../../releases/latest)** y, en la carpeta
+de la descarga:
+
+```bash
+sudo apt install ./celldeck_*_amd64.deb
+```
+
+`apt` instala también lo que necesita (PyGObject, AppIndicator, libpulse). Busca **CellDeck** en
+el menú de aplicaciones. Para comprobar el archivo: `sha256sum -c SHA256SUMS.txt --ignore-missing`.
+
+- Se instala en `/opt/celldeck`, con su propio entorno de Python creado sin conexión a partir de
+  las dependencias que trae el paquete.
+- Desinstalar: `sudo apt remove celldeck`. Tu configuración (`~/.config/celldeck`) se conserva.
+- Para compilar el paquete tú mismo: `bash scripts/build_deb.sh` (deja el `.deb` en `dist/`).
+
 ## Instalar desde el código
 
 En Ubuntu, Zorin, Debian, Mint o Pop!_OS:

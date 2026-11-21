@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=CellDeck
+GenericName=Panel de control desde el celular
+Comment=Controla tu PC desde el celular, como un Stream Deck
+Exec=celldeck
+Icon=celldeck
+Terminal=false
+Categories=Utility;AudioVideo;
+Keywords=stream;deck;remote;control;celular;phone;
+StartupNotify=false
