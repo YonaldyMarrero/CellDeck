@@ -3,13 +3,16 @@
 Menú:
     Abrir panel · Mostrar QR / PIN · Conectar celular por USB
     Modo WiFi · Permitir edición desde el celular · Nuevo PIN · Desconectar todos los dispositivos
-    Iniciar con Windows · Carpeta de configuración · Ver registro · Salir
+    Iniciar con el sistema · Carpeta de configuración · Ver registro · Salir
 """
 
 from __future__ import annotations
 
 import logging
 import os
+import shutil
+import subprocess
+import sys
 import threading
 import webbrowser
 from pathlib import Path
@@ -40,6 +43,8 @@ def load_icon_image() -> Image.Image:
 def _open_path(path: Path) -> None:
     if hasattr(os, "startfile"):
         os.startfile(path)  # noqa: S606 - ruta local propia (carpeta de datos / log)
+    elif opener := shutil.which("xdg-open"):
+        subprocess.Popen([opener, str(path)], start_new_session=True)  # noqa: S603
     else:
         webbrowser.open(path.as_uri())
 
@@ -237,7 +242,7 @@ class TrayApp:
             item("Desconectar todos los dispositivos", self.revoke_all),
             pystray.Menu.SEPARATOR,
             item(
-                "Iniciar con Windows",
+                "Iniciar con Windows" if sys.platform == "win32" else "Iniciar al encender",
                 self.toggle_autostart,
                 checked=lambda _i: autostart.is_enabled(),
                 enabled=lambda _i: autostart.is_supported(),

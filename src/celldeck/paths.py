@@ -20,7 +20,8 @@ def is_frozen() -> bool:
 def app_data_dir() -> Path:
     """Carpeta de datos del usuario (config, settings, logs, plugins).
 
-    Windows: ``%APPDATA%\\CellDeck``. Se puede forzar con ``CELLDECK_HOME``.
+    Windows: ``%APPDATA%\\CellDeck``. Linux: ``$XDG_CONFIG_HOME/celldeck`` (por defecto
+    ``~/.config/celldeck``). Se puede forzar con ``CELLDECK_HOME``.
     """
     override = os.environ.get("CELLDECK_HOME")
     if override:
@@ -28,7 +29,8 @@ def app_data_dir() -> Path:
     appdata = os.environ.get("APPDATA")
     if appdata:
         return Path(appdata) / APP_NAME
-    return Path.home() / ".config" / "celldeck"
+    config_home = os.environ.get("XDG_CONFIG_HOME")
+    return (Path(config_home) if config_home else Path.home() / ".config") / "celldeck"
 
 
 def migrate_legacy_data_dir() -> Path | None:

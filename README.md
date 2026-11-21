@@ -4,9 +4,9 @@
 
 <h1 align="center">CellDeck</h1>
 
-<p align="center"><i>Tu celular viejo, convertido en un Stream Deck para Windows</i></p>
+<p align="center"><i>Tu celular viejo, convertido en un Stream Deck para Windows y Linux</i></p>
 
-**Convierte cualquier celular en un panel de control para tu PC con Windows.** Funciona como un
+**Convierte cualquier celular en un panel de control para tu PC con Windows o Linux.** Funciona como un
 Stream Deck, pero gratis y usando un teléfono viejo que tengas en un cajón.
 
 En el celular **no se instala nada**: abre una página web que sirve tu PC, por cable USB o por
@@ -61,6 +61,9 @@ WiFi. Funciona desde Android antiguos (Chrome 60) hasta celulares nuevos, tablet
 ## Descargar e instalar
 
 **Requisitos:** Windows 10 u 11 de 64 bits. No hace falta Python ni nada más.
+
+> 🐧 **¿Usas Linux?** Ubuntu, Zorin, Debian, Mint, Fedora, KDE… Mira **[docs/linux.md](docs/linux.md)**:
+> funciona igual, con PipeWire/PulseAudio, MPRIS y X11 o Wayland.
 
 1. Entra a **[Releases](../../releases/latest)** y descarga una de estas dos opciones:
    - **`CellDeck.exe`**: un solo archivo. Lo pones donde quieras y lo abres.
@@ -240,8 +243,9 @@ Para reportar una vulnerabilidad: [SECURITY.md](SECURITY.md).
 
 ### Preparar el entorno
 
-Requisitos: Windows 10/11, [Python 3.13](https://www.python.org/downloads/),
-[Git](https://git-scm.com/) y, solo para el lint del frontend, [bun](https://bun.sh).
+Requisitos: Windows 10/11 o Linux, [Python 3.13](https://www.python.org/downloads/) (en Linux
+basta con el 3.11 o superior de la distribución), [Git](https://git-scm.com/) y, solo para el
+lint del frontend, [bun](https://bun.sh). En Linux, sigue [docs/linux.md](docs/linux.md).
 
 ```bat
 git clone https://github.com/IngMaciasY/CellDeck.git

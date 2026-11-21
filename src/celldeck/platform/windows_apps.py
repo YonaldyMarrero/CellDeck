@@ -30,6 +30,8 @@ if sys.platform != "win32":  # pragma: no cover
 
 import winreg
 
+assert sys.platform == "win32"  # noqa: S101 - mypy omite el resto del archivo en otros sistemas
+
 log = logging.getLogger(__name__)
 
 _HIVES = {"HKCU": winreg.HKEY_CURRENT_USER, "HKLM": winreg.HKEY_LOCAL_MACHINE}

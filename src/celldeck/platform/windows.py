@@ -40,6 +40,8 @@ if sys.platform != "win32":  # pragma: no cover - solo se importa en Windows
 import ctypes
 from ctypes import wintypes
 
+assert sys.platform == "win32"  # noqa: S101 - mypy omite el resto del archivo en otros sistemas
+
 log = logging.getLogger(__name__)
 T = TypeVar("T")
 

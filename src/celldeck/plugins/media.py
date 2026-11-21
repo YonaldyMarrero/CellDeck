@@ -1,4 +1,4 @@
-"""Plugin ``media``: teclas multimedia de Windows (funciona con Spotify y cualquier reproductor)."""
+"""Plugin ``media``: teclas multimedia (funciona con Spotify y cualquier reproductor)."""
 
 from __future__ import annotations
 

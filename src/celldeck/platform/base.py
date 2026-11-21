@@ -1,4 +1,4 @@
-"""Contrato de la capa nativa (Windows) que usan plugins y servicios.
+"""Contrato de la capa nativa (Windows o Linux) que usan plugins y servicios.
 
 Ningún plugin llama a Win32/WinRT directamente: todo pasa por un objeto que cumple
 ``PlatformBackend``. Así podemos sustituir la implementación real por ``FakeBackend``
@@ -16,7 +16,7 @@ from celldeck.platform.keymap import KeyCombo
 
 
 class MediaKey(StrEnum):
-    """Teclas multimedia estándar de Windows."""
+    """Teclas multimedia estándar."""
 
     PLAY_PAUSE = "play_pause"
     NEXT = "next"

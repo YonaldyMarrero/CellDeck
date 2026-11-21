@@ -30,11 +30,16 @@ log = logging.getLogger(__name__)
 
 
 def create_backend(fake: bool = False) -> PlatformBackend:
-    """Crea el backend adecuado. Fuera de Windows (o con ``fake=True``) usa el simulado."""
-    if fake or sys.platform != "win32":
-        if not fake:
-            log.warning("Sistema no Windows: se usa el backend simulado")
+    """Crea el backend del sistema: Windows, Linux o, en otro caso (o con ``fake``), el simulado."""
+    if fake:
         return FakeBackend(demo=True)
-    from celldeck.platform.windows import WindowsBackend
+    if sys.platform == "win32":
+        from celldeck.platform.windows import WindowsBackend
 
-    return WindowsBackend()
+        return WindowsBackend()
+    if sys.platform == "linux":
+        from celldeck.platform.linux import LinuxBackend
+
+        return LinuxBackend()
+    log.warning("Sistema no soportado (%s): se usa el backend simulado", sys.platform)
+    return FakeBackend(demo=True)

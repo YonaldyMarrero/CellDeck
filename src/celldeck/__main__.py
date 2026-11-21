@@ -25,7 +25,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--port", type=int, default=None, help="Puerto (por defecto 8765)")
     parser.add_argument(
-        "--fake", action="store_true", help="Backend simulado: no toca Windows (desarrollo)"
+        "--fake", action="store_true", help="Backend simulado: no toca el sistema (desarrollo)"
     )
     parser.add_argument("--no-tray", action="store_true", help="Sin icono en la bandeja")
     parser.add_argument("--debug", action="store_true", help="Logs detallados")

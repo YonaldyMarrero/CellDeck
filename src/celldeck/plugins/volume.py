@@ -1,4 +1,4 @@
-"""Plugin ``volume``: control preciso del volumen maestro (pycaw)."""
+"""Plugin ``volume``: control preciso del volumen maestro (Windows o Linux)."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ class VolumeParams(ActionParams):
 class VolumePlugin(ActionPlugin[VolumeParams]):
     type = "volume"
     title = "Volumen"
-    description = "Fija, sube/baja o silencia el volumen maestro de Windows."
+    description = "Fija, sube/baja o silencia el volumen maestro de la PC."
     params_model = VolumeParams
 
     async def execute(self, params: VolumeParams, ctx: PluginContext) -> ActionResult:
