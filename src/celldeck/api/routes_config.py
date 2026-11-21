@@ -48,6 +48,7 @@ async def save_config(body: SaveConfigRequest, state: StateDep, who: EditorDep) 
     except ConfigConflictError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from None
     log.info("Config guardada por %s", who.device)
+    state.icons.prune(config.custom_icon_ids())
     payload = config_payload(state)
     await state.hub.broadcast("config", payload)
     return payload

@@ -14,6 +14,7 @@ from celldeck import __version__
 from celldeck.config.migrations import add_new_sections
 from celldeck.config.settings import Settings, SettingsStore
 from celldeck.config.store import ConfigStore
+from celldeck.custom_icons import IconStore
 from celldeck.netinfo import AllowedHosts
 from celldeck.obs import ObsBridge
 from celldeck.platform import PlatformBackend, create_backend
@@ -64,6 +65,7 @@ class AppState:
     obs: ObsBridge
     spotify: SpotifyBridge
     mode: str
+    icons: IconStore
     version: str = __version__
     started_at: float = field(default_factory=time.time)
     live: LiveState = field(default_factory=LiveState)
@@ -134,4 +136,5 @@ def build_state(
         obs=ObsBridge(hub, lambda: settings_store.settings),
         spotify=spotify,
         mode=mode,
+        icons=IconStore(data_dir / "icons"),
     )

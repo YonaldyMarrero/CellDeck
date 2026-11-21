@@ -8,6 +8,10 @@ Todos los cambios visibles de CellDeck se anotan aquí. El formato sigue
 
 ### Añadido
 
+- **Iconos personalizados:** en el editor, **Icono → Subir imagen…** pone una imagen propia
+  (PNG, JPG, WebP o GIF, hasta 3 MB; las fotos más grandes del celular se reducen antes de
+  enviarlas) en un botón. La PC la vuelve a codificar como PNG de 160 px sin metadatos y la
+  guarda en `icons/` de la carpeta de datos; las que ningún botón usa se borran al guardar.
 - **Soporte para Linux** (X11 y Wayland; GNOME, KDE, XFCE, Cinnamon…). Ver `docs/linux.md`:
   - Volumen y Volume Mixer con PulseAudio o PipeWire.
   - "Ahora suena", portada y controles multimedia con MPRIS (Spotify, navegadores, VLC…).

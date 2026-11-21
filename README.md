@@ -54,7 +54,7 @@ WiFi. Funciona desde Android antiguos (Chrome 60) hasta celulares nuevos, tablet
 | ⏱️ **Pomodoro** | Temporizador de trabajo y descanso, con aviso en el celular y en Windows. |
 | 🎬 **OBS** | Cambiar de escena (opcional). |
 | 🟢 **Spotify** | Tus playlists, búsqueda y la cola (opcional, con tu propia cuenta). |
-| ✏️ **Editor visual** | Crea tus botones y páginas desde el celular o la PC. Elige entre más de 60 iconos o el logotipo de la app, y cambia colores y tamaños. |
+| ✏️ **Editor visual** | Crea tus botones y páginas desde el celular o la PC. Elige entre más de 60 iconos, el logotipo de la app o **una imagen tuya** (logo, foto…), y cambia colores y tamaños. |
 
 ---
 

@@ -58,6 +58,17 @@
     return data;
   }
 
+  /** Sube una imagen (Blob) como icono de botón. Devuelve { icon: "img:<id>" }. */
+  async function uploadIcon(blob) {
+    const headers = { 'Content-Type': blob.type || 'application/octet-stream' };
+    if (token) headers['X-CellDeck-Token'] = token;
+    const res = await fetchWithTimeout('/api/custom-icons',
+      { method: 'POST', headers: headers, body: blob, cache: 'no-store' }, 30000);
+    const data = await res.json().catch(function () { return null; });
+    if (!res.ok) throw new ApiError(res.status, data && data.detail !== undefined ? data.detail : null);
+    return data;
+  }
+
   global.PD = global.PD || {};
   global.PD.api = {
     ApiError: ApiError,
@@ -102,6 +113,12 @@
     spotifyTracks: function (id, offset) {
       return request('GET', '/api/spotify/playlists/' + encodeURIComponent(id) +
         '/tracks?offset=' + offset);
+    },
+    uploadIcon: uploadIcon,
+    /** URL de un icono personalizado ("img:<id>"). El id es el hash: se cachea para siempre. */
+    customIconUrl: function (value) {
+      return '/api/custom-icons/' + encodeURIComponent(String(value).slice(4)) +
+        '?token=' + encodeURIComponent(token || '');
     },
     /** Las <img> no pueden enviar cabeceras: el token va en la URL, como en la portada. */
     spotifyImage: function (key) {
