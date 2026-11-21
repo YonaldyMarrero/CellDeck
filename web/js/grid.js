@@ -100,6 +100,25 @@
     return img;
   }
 
+  /** Imagen subida por el usuario (icon = "img:<id>"); si no carga, icono genérico. */
+  function customIcon(item) {
+    const img = document.createElement('img');
+    img.className = 'key-img';
+    img.alt = '';
+    img.setAttribute('draggable', 'false');
+    img.onerror = function () {
+      if (img.parentNode) img.parentNode.replaceChild(icon(fallbackIcon(item)), img);
+    };
+    img.src = global.PD.api.customIconUrl(item.icon);
+    return img;
+  }
+
+  function buttonIcon(item, ctx) {
+    if (item.icon === 'app') return appIcon(item, ctx);
+    if (typeof item.icon === 'string' && item.icon.indexOf('img:') === 0) return customIcon(item);
+    return icon(item.icon || 'square');
+  }
+
   function createButton(item, onPress, ctx) {
     const btn = u.el('button', 'key');
     btn.type = 'button';
@@ -108,7 +127,7 @@
       btn.style.background = item.color;
       if (u.isLightColor(item.color)) btn.classList.add('dark-text');
     }
-    btn.appendChild(item.icon === 'app' ? appIcon(item, ctx) : icon(item.icon || 'square'));
+    btn.appendChild(buttonIcon(item, ctx));
     const label = u.el('span', 'key-label', item.label || '');
     btn.appendChild(label);
     if (item.label) btn.setAttribute('aria-label', item.label);

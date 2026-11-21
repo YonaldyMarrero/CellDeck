@@ -14,10 +14,15 @@ def atomic_write_text(path: Path, text: str, retries: int = 5) -> None:
     puede fallar si otro programa (antivirus, editor) tiene el archivo abierto, así que
     se reintenta unas cuantas veces.
     """
+    atomic_write_bytes(path, text.encode("utf-8"), retries)
+
+
+def atomic_write_bytes(path: Path, data: bytes, retries: int = 5) -> None:
+    """Como :func:`atomic_write_text`, para datos binarios (p. ej. imágenes)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f".{path.name}.tmp")
-    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(text)
+    with open(tmp, "wb") as fh:
+        fh.write(data)
         fh.flush()
         os.fsync(fh.fileno())
     for attempt in range(retries):

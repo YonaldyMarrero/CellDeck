@@ -25,8 +25,12 @@ def test_token_roundtrip_and_tampering() -> None:
     assert payload is not None and payload.device == "redmi"
 
     body, sig = token.split(".")
-    assert tokens.verify(body + "." + sig[:-2] + "AA") is None
-    assert tokens.verify(body[:-1] + "x." + sig) is None
+    # El reemplazo debe ser distinto del original: si no, el token no cambia (el nonce y la
+    # firma son aleatorios y terminaban en "x"/"AA" en ~1 de cada 64 ejecuciones).
+    sig_tail = "AA" if sig[-2:] != "AA" else "BB"
+    body_tail = "x" if body[-1] != "x" else "y"
+    assert tokens.verify(body + "." + sig[:-2] + sig_tail) is None
+    assert tokens.verify(body[:-1] + body_tail + "." + sig) is None
     assert tokens.verify("") is None
     assert tokens.verify(None) is None
     assert tokens.verify("a.b.c") is None

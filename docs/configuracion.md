@@ -35,6 +35,21 @@ Casi nada requiere tocar archivos a mano:
 | Conectar OBS | Página **OBS** → **Configurar conexión** |
 | Conectar Spotify | Página **Spotify** (ver [spotify.md](spotify.md)) |
 
+### Imágenes propias en los botones
+
+En el editor, **Icono → Subir imagen…** pone tu propio logo o una foto en un botón. Desde el
+celular puedes elegirla de la galería o hacerla con la cámara.
+
+- Formatos: PNG, JPG, WebP o GIF (del GIF animado se usa el primer fotograma). SVG no se
+  admite, porque puede llevar código.
+- Hasta 3 MB. Las fotos más grandes se reducen en el propio celular antes de enviarlas.
+- La PC la vuelve a codificar como PNG cuadrado de 160 px, con fondo transparente y sin
+  metadatos (se borran, por ejemplo, la ubicación GPS de las fotos).
+- Se guardan en la carpeta `icons/` de la carpeta de datos. En `config.json` el botón queda
+  con `"icon": "img:<id>"`. Las imágenes que ningún botón usa se borran al guardar, pasada una
+  hora desde que se subieron.
+- Solo puede subirlas quien puede editar (la PC, o el celular si permites la edición).
+
 ## `settings.json` (avanzado)
 
 Cierra CellDeck antes de editarlo a mano.

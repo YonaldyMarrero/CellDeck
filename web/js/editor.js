@@ -35,9 +35,17 @@
     apps: null
   };
 
-  /** Vista previa del icono: "Logo de la app" o el SVG correspondiente. */
+  /** Vista previa del icono: "Logo de la app", la imagen subida o el SVG correspondiente. */
   function iconPreview(name) {
-    return name === 'app' ? u.el('span', 'icon-preview-app', 'Logo de la app') : icon(name || 'square');
+    if (name === 'app') return u.el('span', 'icon-preview-app', 'Logo de la app');
+    if (typeof name === 'string' && name.indexOf('img:') === 0) {
+      const img = document.createElement('img');
+      img.className = 'icon-preview-img';
+      img.alt = 'Imagen personalizada';
+      img.src = PD.api.customIconUrl(name);
+      return img;
+    }
+    return icon(name || 'square');
   }
 
   function clone(obj) {

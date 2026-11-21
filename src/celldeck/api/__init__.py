@@ -5,6 +5,7 @@ from celldeck.api import (
     routes_apps,
     routes_auth,
     routes_config,
+    routes_icons,
     routes_media,
     routes_obs,
     routes_pairing,
@@ -18,6 +19,7 @@ ROUTERS = (
     routes_media.router,
     routes_pairing.router,
     routes_apps.router,
+    routes_icons.router,
     routes_obs.router,
     routes_spotify.router,
 )

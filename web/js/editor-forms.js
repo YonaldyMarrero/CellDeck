@@ -177,14 +177,92 @@
   const PALETTE = ['#4f8cff', '#1db954', '#e8a33d', '#c0392b', '#9b59b6', '#16a085', '#e84393',
     '#2c3e50', '#f1c40f', '#00b4d8', '#ff6b35', '#7f8c8d', '#ffffff', '#000000'];
 
+  // -------------------------------------------------- imagen personalizada
+  const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;  // como el servidor (celldeck.custom_icons)
+  const SHRINK_TO_PX = 1024;
+
+  function isCustomIcon(value) {
+    return typeof value === 'string' && value.indexOf('img:') === 0;
+  }
+
+  function loadImage(file) {
+    return new Promise(function (resolve, reject) {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = function () { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('No se pudo leer la imagen'));
+      };
+      img.src = url;
+    });
+  }
+
+  /** Las fotos del celular pesan más de 3 MB: se reducen aquí antes de enviarlas. */
+  async function shrinkIfNeeded(file) {
+    if (file.size <= MAX_UPLOAD_BYTES) return file;
+    const img = await loadImage(file);
+    const scale = Math.min(1, SHRINK_TO_PX / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) {
+        if (blob) resolve(blob); else reject(new Error('No se pudo reducir la imagen'));
+      }, type, 0.9);
+    });
+  }
+
   function iconPicker(value, onChange) {
     const wrap = u.el('div', 'icon-picker');
     let current = value;
     function paint() {
+      uploadChoice.setAttribute('data-icon', isCustomIcon(current) ? current : 'upload');
+      uploadChoice.innerHTML = '';
+      if (isCustomIcon(current)) {
+        const thumb = uploadChoice.appendChild(document.createElement('img'));
+        thumb.className = 'icon-choice-thumb';
+        thumb.alt = '';
+        thumb.src = PD.api.customIconUrl(current);
+        uploadChoice.appendChild(document.createTextNode('Cambiar imagen'));
+      } else {
+        uploadChoice.appendChild(document.createTextNode('Subir imagen…'));
+      }
       Array.prototype.forEach.call(wrap.children, function (b) {
         b.classList.toggle('selected', b.getAttribute('data-icon') === current);
       });
     }
+    // Opción especial: una imagen propia (logo, foto...). La PC la valida y la reduce.
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+    fileInput.className = 'hidden';
+    const uploadChoice = wrap.appendChild(u.el('button', 'icon-choice icon-choice-app icon-choice-upload'));
+    uploadChoice.type = 'button';
+    uploadChoice.addEventListener('click', function (e) {
+      e.preventDefault();
+      fileInput.value = '';
+      fileInput.click();
+    });
+    fileInput.addEventListener('change', async function () {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      uploadChoice.disabled = true;
+      uploadChoice.textContent = 'Subiendo…';
+      try {
+        const res = await PD.api.uploadIcon(await shrinkIfNeeded(file));
+        current = res.icon;
+        onChange(res.icon);
+      } catch (err) {
+        u.toast(err.message || 'No se pudo subir la imagen', 'error');
+      } finally {
+        uploadChoice.disabled = false;
+        paint();
+      }
+    });
+    wrap.appendChild(fileInput);
     // Opción especial: logotipo oficial de la app (lo extrae la PC del programa instalado).
     const appChoice = wrap.appendChild(u.el('button', 'icon-choice icon-choice-app', 'Logo de la app'));
     appChoice.type = 'button';

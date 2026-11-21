@@ -25,6 +25,8 @@ from celldeck.plugins.base import ActionParams, validate_action_value
 ID_PATTERN = r"^[A-Za-z0-9_-]{1,40}$"
 HEX_COLOR = r"^#[0-9A-Fa-f]{6}$"
 ICON_PATTERN = r"^[a-z0-9-]{1,40}$"
+# Un botón también puede llevar una imagen subida por el usuario (``celldeck.custom_icons``).
+BUTTON_ICON_PATTERN = r"^(?:[a-z0-9-]{1,40}|img:[0-9a-f]{16})$"
 MAX_PAGES = 30
 
 WidgetKind = Literal[
@@ -42,7 +44,7 @@ class ButtonItem(_Model):
     kind: Literal["button"]
     id: str = Field(pattern=ID_PATTERN)
     label: str = Field(default="", max_length=40)
-    icon: str | None = Field(default=None, pattern=ICON_PATTERN)
+    icon: str | None = Field(default=None, pattern=BUTTON_ICON_PATTERN)
     color: str | None = Field(default=None, pattern=HEX_COLOR)
     w: int = Field(default=1, ge=1, le=4)
     h: int = Field(default=1, ge=1, le=4)
@@ -134,6 +136,15 @@ class Config(_Model):
         if page is None:
             return None
         return next((i for i in page.items if i.id == item_id), None)
+
+    def custom_icon_ids(self) -> set[str]:
+        """Ids de las imágenes personalizadas que usa algún botón (``"img:<id>"``)."""
+        return {
+            item.icon[4:]
+            for page in self.pages
+            for item in page.items
+            if isinstance(item, ButtonItem) and item.icon and item.icon.startswith("img:")
+        }
 
     def to_json_dict(self) -> dict[str, Any]:
         """Representación JSON (la que se guarda y se envía al celular)."""
