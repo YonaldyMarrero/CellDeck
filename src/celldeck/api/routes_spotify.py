@@ -35,10 +35,11 @@ SpotifyId = Annotated[str, Path(pattern=PLAYLIST_ID_PATTERN)]
 
 
 def require_local(principal: PrincipalDep) -> Principal:
-    if not principal.loopback:
+    # La IP no basta: el celular por adb reverse también llega como 127.0.0.1.
+    if not principal.admin:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            "La cuenta de Spotify solo se configura desde la PC o con el celular por USB.",
+            "La cuenta de Spotify solo se configura desde la PC (abre el panel desde la bandeja).",
         )
     return principal
 

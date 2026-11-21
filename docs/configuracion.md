@@ -45,7 +45,7 @@ Cierra CellDeck antes de editarlo a mano.
 | `mode` | `"usb"` | `"usb"`: solo esta PC y el cable. `"wifi"`: escucha en la red y pide PIN |
 | `pin` | aleatorio | PIN de 6 dígitos para emparejar celulares por WiFi |
 | `secret` | aleatorio | Firma los tokens de los dispositivos. Cambiarlo los desconecta a todos |
-| `allow_remote_edit` | `false` | Permite usar el editor por WiFi |
+| `allow_remote_edit` | `false` | Permite usar el editor desde los celulares emparejados (WiFi o USB) |
 | `allowed_url_schemes` | `http, https, spotify, steam, mailto, discord, ms-settings` | Esquemas que pueden abrir los botones de enlace |
 | `extra_allowed_hosts` | `[]` | Nombres extra que se aceptan en la cabecera `Host` (p. ej. `mipc.local`) |
 | `token_ttl_days` | `90` | Días que dura emparejado un celular |

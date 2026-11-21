@@ -49,7 +49,8 @@
     if (!res.ok) {
       const detail = data && data.detail !== undefined ? data.detail : null;
       const err = new ApiError(res.status, detail);
-      if (res.status === 401 && onUnauthorized && path !== '/api/session' && path !== '/api/pair') {
+      if (res.status === 401 && onUnauthorized && path !== '/api/session' && path !== '/api/pair' &&
+          path !== '/api/session/admin') {
         onUnauthorized(err);
       }
       throw err;
@@ -65,6 +66,7 @@
     onUnauthorized: function (fn) { onUnauthorized = fn; },
     session: function () { return request('GET', '/api/session'); },
     pair: function (pin, device) { return request('POST', '/api/pair', { pin: pin, device: device }); },
+    adminSession: function (code) { return request('POST', '/api/session/admin', { code: code }); },
     getConfig: function () { return request('GET', '/api/config'); },
     saveConfig: function (revision, config) {
       return request('PUT', '/api/config', { revision: revision, config: config });

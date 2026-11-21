@@ -1,8 +1,8 @@
 """Emparejamiento: PIN, URLs y código QR para la página /pair.html de la PC.
 
-Estas rutas revelan el PIN, así que **solo responden a la propia PC** (loopback) y
-además exigen el token (que una web externa no puede leer). Un celular por WiFi
-nunca puede consultarlas.
+Estas rutas revelan el PIN, así que **solo responden a la propia PC**: exigen un token
+de administración (canjeado con un enlace de la bandeja) usado desde loopback. Ni un
+celular por WiFi ni uno por USB (``adb reverse``) pueden consultarlas.
 """
 
 from __future__ import annotations
@@ -12,9 +12,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, Response, status
 
-from celldeck.api.deps import PrincipalDep, StateDep, client_ip
+from celldeck.api.deps import AdminDep, StateDep
 from celldeck.netinfo import local_ipv4_addresses, primary_ipv4
-from celldeck.security import is_loopback
 from celldeck.state import AppState
 
 router = APIRouter(prefix="/api/pairing", tags=["pairing"])
@@ -29,18 +28,12 @@ def pairing_urls(state: AppState, port: int) -> list[str]:
     return [f"http://{ip}:{port}/#pin={pin}" for ip in ordered]
 
 
-def _require_local(request: Request) -> None:
-    if not is_loopback(client_ip(request)):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Solo disponible desde la propia PC")
-
-
 def _port(request: Request, state: AppState) -> int:
     return request.url.port or state.settings.port
 
 
 @router.get("")
-def pairing_info(request: Request, state: StateDep, _: PrincipalDep) -> dict[str, Any]:
-    _require_local(request)
+def pairing_info(request: Request, state: StateDep, _: AdminDep) -> dict[str, Any]:
     port = _port(request, state)
     return {
         "mode": state.mode,
@@ -53,9 +46,8 @@ def pairing_info(request: Request, state: StateDep, _: PrincipalDep) -> dict[str
 
 
 @router.get("/qr.png")
-def pairing_qr(request: Request, state: StateDep, _: PrincipalDep, url: str = "") -> Response:
+def pairing_qr(request: Request, state: StateDep, _: AdminDep, url: str = "") -> Response:
     """QR de una de las URLs de emparejamiento (no se generan QR de texto arbitrario)."""
-    _require_local(request)
     if url not in pairing_urls(state, _port(request, state)):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "URL de emparejamiento no válida")
     import qrcode

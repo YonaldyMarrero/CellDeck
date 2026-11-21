@@ -2,6 +2,25 @@
 
 Registro de lo que se eligió, lo que se descartó y por qué. Lo más reciente va primero.
 
+## Autenticación por USB: la IP no prueba que sea la PC (2026-11-21)
+
+- **Problema:** con `adb reverse` el celular llega como `127.0.0.1`. Cualquier app instalada en
+  él podía pedir `/api/session`, recibir sin PIN un token con permiso de edición, guardar un
+  botón `launch` y ejecutarlo: ejecución de programas en la PC.
+- **Elegido:** el permiso de administración va en el token (`adm`), y solo se obtiene canjeando
+  un código de un solo uso que genera el propio proceso (la bandeja al abrir el panel; el log
+  en `--no-tray`). El código viaja en el fragmento (`#admin=`), que no se envía al servidor ni
+  queda en el `Referer`. Caduca a los 2 minutos y solo se canjea desde loopback. El token admin
+  solo cuenta como admin desde loopback.
+- **Todos los demás clientes se emparejan con el PIN**, también por USB. `allow_remote_edit`
+  pasa a significar "edición desde el celular" (WiFi o USB). El PIN, OBS y Spotify solo se
+  configuran con el token admin.
+- **Tokens v2:** los v1 se emitieron sin PIN a cualquier cliente local, así que se rechazan.
+  Cada celular introduce el PIN una vez.
+- **Descartado:** distinguir el celular por la IP o el puerto de origen (adb reenvía desde
+  loopback, indistinguible), y un secreto en un archivo de `%APPDATA%` (el navegador no puede
+  leerlo).
+
 ## Cambio de nombre: PhoneDeck → CellDeck (2026-11-09)
 
 - **Por qué:** en GitHub ya había 17 repositorios llamados PhoneDeck. "CellDeck" solo aparecía en

@@ -6,6 +6,20 @@ Todos los cambios visibles de CellDeck se anotan aquí. El formato sigue
 
 ## [Sin publicar]
 
+### Seguridad
+
+- **El celular conectado por USB ya no recibe permisos de administración sin PIN.** Con
+  `adb reverse` el celular (y cualquier app instalada en él) llega a la PC como `127.0.0.1`, y
+  antes eso bastaba para obtener un token con permiso de edición: una app maliciosa del celular
+  podía crear un botón que abriera cualquier programa en la PC. Ahora:
+  - Todos los dispositivos, también por USB, se emparejan una vez con el PIN.
+  - La propia PC entra al panel con un enlace de un solo uso que abre la bandeja
+    (`#admin=…`, caduca en 2 minutos). En modo `--no-tray` el enlace aparece en el log.
+  - Editar botones desde el celular requiere activar **Permitir edición desde el celular**.
+    Ver el PIN y configurar OBS o Spotify solo es posible desde la propia PC.
+  - Los tokens emitidos por versiones anteriores dejan de valer: cada celular vuelve a
+    introducir el PIN una vez.
+
 ## [0.1.1] - 2026-11-15
 
 ### Cambiado

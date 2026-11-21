@@ -12,7 +12,7 @@ from starlette.websockets import WebSocketDisconnect
 from celldeck.platform.fake import FakeBackend
 from celldeck.server import create_app
 from celldeck.state import AppState
-from tests.conftest import LAN_HOST, auth, local_token, make_state
+from tests.conftest import LAN_HOST, auth, local_token, make_state, paired_token
 
 # El TestClient usa Host 'testserver' en WebSocket salvo que se pase la URL completa.
 WS_URL = "ws://127.0.0.1:8765/ws"
@@ -45,9 +45,71 @@ def test_host_header_rejected(state: AppState) -> None:
         assert c.get("/api/health").status_code == 421
 
 
-def test_local_session_gives_token(client: TestClient) -> None:
-    data = client.get("/api/session").json()
-    assert data["loopback"] is True and data["can_edit"] is True and data["token"]
+def test_local_session_without_token_requires_pairing(client: TestClient) -> None:
+    """Llegar como 127.0.0.1 ya no da un token: el celular por adb reverse también llega así."""
+    res = client.get("/api/session")
+    assert res.status_code == 401
+    assert "token" not in res.text
+
+
+def test_admin_link_gives_admin_session(client: TestClient) -> None:
+    token = local_token(client)
+    data = client.get("/api/session", headers=auth(token)).json()
+    assert data["loopback"] is True and data["admin"] is True and data["can_edit"] is True
+
+
+def test_admin_link_is_single_use(client: TestClient, state: AppState) -> None:
+    code = state.admin_links.issue()
+    assert client.post("/api/session/admin", json={"code": code}).status_code == 200
+    assert client.post("/api/session/admin", json={"code": code}).status_code == 403
+    assert client.post("/api/session/admin", json={"code": "inventado"}).status_code == 403
+
+
+def test_admin_link_only_from_loopback(remote: TestClient, wifi_state: AppState) -> None:
+    code = wifi_state.admin_links.issue()
+    assert remote.post("/api/session/admin", json={"code": code}).status_code == 403
+
+
+def test_usb_phone_cannot_edit_or_read_pin(client: TestClient, state: AppState) -> None:
+    """Una app del celular por adb reverse (127.0.0.1, sin enlace de la bandeja)."""
+    token = paired_token(client)
+    h = auth(token)
+    data = client.get("/api/session", headers=h).json()
+    assert data["admin"] is False and data["can_edit"] is False
+    payload = client.get("/api/config", headers=h).json()
+    assert client.put("/api/config", headers=h, json=payload).status_code == 403
+    assert client.get("/api/pairing", headers=h).status_code == 403
+    assert client.get("/api/obs/settings", headers=h).status_code == 403
+    assert client.get("/api/spotify/settings", headers=h).status_code == 403
+    # Ejecutar los botones ya configurados sí puede, como cualquier celular emparejado.
+    res = client.post("/api/run", headers=h, json={"page": "media", "item": "play-pause"})
+    assert res.status_code == 200
+
+
+def test_usb_phone_can_edit_when_allowed(client: TestClient, state: AppState) -> None:
+    state.settings_store.update(allow_remote_edit=True)
+    h = auth(paired_token(client))
+    payload = client.get("/api/config", headers=h).json()
+    assert client.put("/api/config", headers=h, json=payload).status_code == 200
+    assert client.get("/api/pairing", headers=h).status_code == 403  # el PIN, nunca
+
+
+def test_admin_token_is_not_admin_from_the_network(
+    remote: TestClient, wifi_state: AppState
+) -> None:
+    """Si un token de la PC se filtrara, desde la red vale como el de un celular más."""
+    token = wifi_state.tokens.issue("pc", 1, admin=True)
+    data = remote.get("/api/session", headers=auth(token)).json()
+    assert data["admin"] is False and data["can_edit"] is False
+    assert remote.get("/api/pairing", headers=auth(token)).status_code == 403
+
+
+def test_websocket_hello_reports_edit_permission(client: TestClient) -> None:
+    with client.websocket_connect(f"{WS_URL}?token={paired_token(client)}") as ws:
+        hello = ws.receive_json()
+    assert hello["type"] == "hello" and hello["data"]["can_edit"] is False
+    with client.websocket_connect(f"{WS_URL}?token={local_token(client)}") as ws:
+        assert ws.receive_json()["data"]["can_edit"] is True
 
 
 def test_run_requires_token(client: TestClient, backend: FakeBackend) -> None:

@@ -14,13 +14,44 @@
     return res.json();
   }
 
+  // Mismo almacenamiento que el panel (util.js): el token de la PC sirve para ambas páginas.
+  const TOKEN_KEY = 'celldeck.token';
+
+  function savedToken() {
+    try { return JSON.parse(global.localStorage.getItem(TOKEN_KEY)); } catch (e) { return null; }
+  }
+
+  function saveToken(token) {
+    try { global.localStorage.setItem(TOKEN_KEY, JSON.stringify(token)); } catch (e) { /* sin almacenamiento */ }
+  }
+
+  /** Canjea el enlace de la bandeja (#admin=...) por un token de administración. */
+  async function adminFromHash() {
+    const m = /[#&]admin=([A-Za-z0-9_-]{1,64})/.exec(global.location.hash);
+    if (!m) return null;
+    if (global.history && global.history.replaceState) {
+      global.history.replaceState(null, '', global.location.pathname + global.location.search);
+    }
+    const res = await fetch('/api/session/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: m[1] }),
+      cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    saveToken(data.token);
+    return data.token;
+  }
+
   async function load() {
     const msg = $('pair-msg');
     try {
-      const session = await getJson('/api/session');
-      const token = session.token;
-      if (!token) throw new Error('Abre esta página en la propia PC (http://127.0.0.1:8765/pair.html)');
-      const info = await getJson('/api/pairing', token);
+      const token = (await adminFromHash()) || savedToken();
+      const info = await getJson('/api/pairing', token).catch(function () {
+        throw new Error('ábrela desde el icono de CellDeck en la bandeja → "Mostrar QR / PIN"');
+      });
+      $('usb-pin').textContent = info.pin;
       $('usb-url').textContent = info.usb_url;
       if (info.mode !== 'wifi') {
         msg.textContent = 'Modo USB activo.';
@@ -28,7 +59,7 @@
         return;
       }
       msg.textContent = 'Modo WiFi activo.' + (info.allow_remote_edit
-        ? ' ⚠ La edición por WiFi está permitida.' : '');
+        ? ' ⚠ La edición desde el celular está permitida.' : '');
       show('wifi-box', true);
       $('pin').textContent = info.pin;
       if (!info.urls.length) {

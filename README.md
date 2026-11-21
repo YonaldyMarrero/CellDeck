@@ -222,9 +222,10 @@ forma parte de la licencia MIT.*
 ## Seguridad y privacidad
 
 - Por defecto solo acepta **conexiones por cable o desde la propia PC**.
-- Por WiFi exige **PIN** y cada celular recibe un token. Desde la bandeja puedes desconectarlos
-  a todos.
-- La **edición por WiFi** está desactivada salvo que la actives.
+- Todo celular, por WiFi **o por cable**, se empareja con el **PIN** y recibe un token. Desde la
+  bandeja puedes desconectarlos a todos.
+- La propia PC entra al panel desde el icono de la bandeja, con un enlace de un solo uso.
+- La **edición desde el celular** está desactivada salvo que la actives.
 - **No hay servidores externos ni telemetría.** Todo ocurre entre tu PC y tu celular. Spotify y
   OBS solo se usan si los configuras.
 

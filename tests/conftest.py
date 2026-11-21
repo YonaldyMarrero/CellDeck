@@ -74,7 +74,18 @@ def client(state: AppState) -> Iterator[TestClient]:
 
 
 def local_token(client: TestClient) -> str:
-    token: str = client.get("/api/session").json()["token"]
+    """Token de la propia PC: canjea un enlace de la bandeja (``#admin=...``)."""
+    state: AppState = client.app.state.pd  # type: ignore[attr-defined]
+    code = state.admin_links.issue()
+    token: str = client.post("/api/session/admin", json={"code": code}).json()["token"]
+    return token
+
+
+def paired_token(client: TestClient, device: str = "celular") -> str:
+    """Token de un celular emparejado con el PIN (también por USB: llega como 127.0.0.1)."""
+    state: AppState = client.app.state.pd  # type: ignore[attr-defined]
+    res = client.post("/api/pair", json={"pin": state.settings.pin, "device": device})
+    token: str = res.json()["token"]
     return token
 
 

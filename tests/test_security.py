@@ -6,7 +6,15 @@ import time
 
 import pytest
 
-from celldeck.security import PairingLocked, PinGuard, TokenManager, is_loopback, strip_port
+from celldeck.security import (
+    AdminLinks,
+    PairingLocked,
+    PinGuard,
+    TokenManager,
+    _b64e,
+    is_loopback,
+    strip_port,
+)
 
 
 def test_token_roundtrip_and_tampering() -> None:
@@ -82,3 +90,44 @@ def test_is_loopback(host: str, expected: bool) -> None:
 )
 def test_strip_port(header: str, expected: str) -> None:
     assert strip_port(header) == expected
+
+
+def test_admin_claim_roundtrip() -> None:
+    tokens = TokenManager(lambda: "a" * 64)
+    assert tokens.verify(tokens.issue("pc", 1, admin=True)).admin is True  # type: ignore[union-attr]
+    assert tokens.verify(tokens.issue("celular", 1)).admin is False  # type: ignore[union-attr]
+
+
+def test_v1_tokens_are_rejected() -> None:
+    """Los tokens v1 se emitían sin PIN a cualquier cliente local: dejan de valer."""
+    import hashlib
+    import hmac
+    import json
+
+    secret = "a" * 64
+    tokens = TokenManager(lambda: secret)
+    now = int(time.time())
+    body = _b64e(json.dumps({"v": 1, "dev": "local", "iat": now, "exp": now + 999}).encode())
+    sig = _b64e(hmac.new(secret.encode(), body.encode(), hashlib.sha256).digest())
+    assert tokens.verify(f"{body}.{sig}") is None
+
+
+def test_admin_links_expire_and_are_single_use(monkeypatch: pytest.MonkeyPatch) -> None:
+    links = AdminLinks(ttl_seconds=10)
+    code = links.issue()
+    assert links.consume(code) is True
+    assert links.consume(code) is False
+    assert links.consume("ñandú") is False  # texto no ASCII: sin excepción
+
+    clock = {"t": 1000.0}
+    monkeypatch.setattr(time, "monotonic", lambda: clock["t"])
+    late = links.issue()
+    clock["t"] += 11
+    assert links.consume(late) is False
+
+
+def test_admin_links_keep_a_bounded_number() -> None:
+    links = AdminLinks(max_pending=3)
+    codes = [links.issue() for _ in range(5)]
+    assert links.consume(codes[0]) is False  # el más antiguo se descartó
+    assert links.consume(codes[-1]) is True

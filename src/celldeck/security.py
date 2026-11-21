@@ -7,7 +7,11 @@ Modelo de amenazas resumido (ver docs/seguridad.md):
   Una web maliciosa abierta en el navegador de la PC no puede añadir esa cabecera a
   peticiones cross-origin sin CORS (y no hay CORS), así que no puede disparar acciones.
 - Se valida ``Host`` para impedir ataques de *DNS rebinding*.
-- Desde loopback el token se obtiene sin PIN; desde la red hace falta el PIN.
+- La IP de origen **no** prueba que el cliente sea la propia PC: con ``adb reverse`` el
+  celular (y cualquier app instalada en él) llega como 127.0.0.1. Por eso todos los
+  dispositivos se emparejan con el PIN, y el permiso de administración (editar, ver el
+  PIN, OBS, Spotify) solo se obtiene canjeando un enlace de un solo uso que abre la
+  bandeja de la PC (``#admin=código``). Ver :class:`AdminLinks`.
 """
 
 from __future__ import annotations
@@ -19,6 +23,7 @@ import ipaddress
 import json
 import logging
 import secrets
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -31,6 +36,9 @@ from starlette.websockets import WebSocketClose
 log = logging.getLogger(__name__)
 
 TOKEN_HEADER = "x-celldeck-token"  # noqa: S105 - nombre de cabecera, no un secreto
+# v1 se emitía sin PIN a cualquier cliente local (incluido el celular por adb reverse):
+# esos tokens dejan de valer y cada dispositivo vuelve a emparejarse una vez.
+TOKEN_VERSION = 2
 
 
 # --------------------------------------------------------------------- tokens
@@ -47,6 +55,7 @@ class TokenPayload:
     device: str
     issued_at: int
     expires_at: int
+    admin: bool = False
 
 
 class TokenManager:
@@ -62,11 +71,12 @@ class TokenManager:
         key = self._secret().encode("utf-8")
         return _b64e(hmac.new(key, payload_b64.encode("ascii"), hashlib.sha256).digest())
 
-    def issue(self, device: str, ttl_days: int) -> str:
+    def issue(self, device: str, ttl_days: int, *, admin: bool = False) -> str:
         now = int(time.time())
         payload = {
-            "v": 1,
+            "v": TOKEN_VERSION,
             "dev": device[:64],
+            "adm": admin,
             "iat": now,
             "exp": now + ttl_days * 86400,
             "n": secrets.token_hex(4),
@@ -82,12 +92,58 @@ class TokenManager:
             return None
         try:
             data = json.loads(_b64d(payload_b64))
-            result = TokenPayload(str(data["dev"]), int(data["iat"]), int(data["exp"]))
-        except (ValueError, KeyError, TypeError):
+            if data.get("v") != TOKEN_VERSION:
+                return None
+            result = TokenPayload(
+                str(data["dev"]), int(data["iat"]), int(data["exp"]), data.get("adm") is True
+            )
+        except (ValueError, KeyError, TypeError, AttributeError):
             return None
         if result.expires_at < time.time():
             return None
         return result
+
+
+# ------------------------------------------------------------- enlaces admin
+class AdminLinks:
+    """Códigos de un solo uso que prueban que quien abre el panel es la propia PC.
+
+    Solo los genera el proceso de CellDeck (la bandeja al abrir el panel, o el log en
+    modo ``--no-tray``) y viajan en el fragmento de la URL (``#admin=...``), que el
+    navegador nunca envía al servidor ni a terceros. Se canjean una vez por un token
+    de administración, y solo desde loopback.
+    """
+
+    def __init__(self, ttl_seconds: float = 120.0, max_pending: int = 8) -> None:
+        self.ttl = ttl_seconds
+        self.max_pending = max_pending
+        self._pending: dict[str, float] = {}
+        self._lock = threading.Lock()  # la bandeja los pide desde otro hilo
+
+    def issue(self, ttl_seconds: float | None = None) -> str:
+        code = secrets.token_urlsafe(16)
+        now = time.monotonic()
+        with self._lock:
+            self._purge(now)
+            while len(self._pending) >= self.max_pending:
+                self._pending.pop(next(iter(self._pending)))
+            self._pending[code] = now + (ttl_seconds or self.ttl)
+        return code
+
+    def consume(self, code: str) -> bool:
+        now = time.monotonic()
+        with self._lock:
+            self._purge(now)
+            for candidate in list(self._pending):
+                if hmac.compare_digest(candidate.encode(), code.encode("utf-8")):
+                    del self._pending[candidate]
+                    return True
+        return False
+
+    def _purge(self, now: float) -> None:
+        for code, expires in list(self._pending.items()):
+            if expires <= now:
+                del self._pending[code]
 
 
 # ----------------------------------------------------------------- PIN/limit

@@ -20,10 +20,13 @@ Responderemos en cuanto podamos. Es un proyecto voluntario y no hay plazos garan
 ## Cómo protege CellDeck tu PC (resumen)
 
 - **USB por defecto.** El modo WiFi hay que activarlo a mano desde el icono de la bandeja.
-- **PIN de 6 dígitos y token firmado** para cada dispositivo. **Desconectar todos los dispositivos**,
-  en la bandeja, invalida todos los tokens.
+- **PIN de 6 dígitos y token firmado** para cada dispositivo, también por cable USB: con
+  `adb reverse` el celular llega como `127.0.0.1`, así que la IP no prueba que sea la PC.
+  **Desconectar todos los dispositivos**, en la bandeja, invalida todos los tokens.
+- **La propia PC entra con un enlace de un solo uso** (`#admin=…`) que abre la bandeja. Solo ese
+  token permite ver el PIN y configurar OBS y Spotify.
 - **Comprobación de la cabecera `Host`**, contra ataques de *DNS rebinding*.
-- **La edición remota (por WiFi) está desactivada** por defecto.
+- **La edición desde el celular (WiFi o USB) está desactivada** por defecto.
 - **Lista de esquemas de URL permitidos** para los botones de tipo enlace.
 - **Los secretos se guardan solo en tu PC**, en `%APPDATA%\CellDeck\settings.json`: PIN,
   secreto de los tokens, contraseña de OBS y token de Spotify. Nunca se incluyen en el

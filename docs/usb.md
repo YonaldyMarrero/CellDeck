@@ -8,7 +8,7 @@ Hay dos formas de usar CellDeck por cable. **Recomendada: `adb reverse`.**
 | Modo de CellDeck | USB (solo `127.0.0.1`, el más seguro) | WiFi (escucha en la red, pide PIN) |
 | URL en el celular | `http://localhost:8765` | `http://IP-de-la-PC:8765` |
 | "Añadir a inicio" a pantalla completa | Sí (localhost es contexto seguro) | Acceso directo normal |
-| Riesgo | Ninguno | La PC puede usar los datos móviles del celular |
+| Riesgo | Pide el PIN una vez, como por WiFi | La PC puede usar los datos móviles del celular |
 
 ---
 
@@ -36,7 +36,13 @@ en `C:\platform-tools`) y añade esa carpeta al `PATH`. Comprueba con `adb versi
 2. Con CellDeck en marcha, ejecuta `scripts\connect_usb.bat` (o, desde el hito (e),
    **Conectar USB** en el icono de la bandeja).
 3. En el celular abre Chrome y entra en **`http://localhost:8765`**.
-4. Menú de Chrome → **Añadir a pantalla de inicio**. Se abrirá a pantalla completa.
+4. Introduce el PIN (icono de la bandeja → **Mostrar QR / PIN**). Solo la primera vez.
+5. Menú de Chrome → **Añadir a pantalla de inicio**. Se abrirá a pantalla completa.
+
+> ¿Por qué pide PIN si va por cable? Con `adb reverse` el celular llega a la PC como
+> `127.0.0.1`, igual que cualquier app instalada en él. El PIN evita que otra app del celular
+> controle tu PC. Para editar botones desde el celular, activa **Permitir edición desde el
+> celular** en la bandeja.
 
 > El túnel de `adb reverse` se pierde al desconectar el cable o reiniciar el celular:
 > vuelve a ejecutar `connect_usb.bat`.
